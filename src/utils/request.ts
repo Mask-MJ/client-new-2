@@ -1,6 +1,5 @@
-import type { Middleware } from 'openapi-fetch';
-
 import type { paths } from '#/openapi'; // 由openapi-typescript生成
+import type { Middleware } from 'openapi-fetch';
 
 import createClient from 'openapi-fetch';
 

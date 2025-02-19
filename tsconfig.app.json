@@ -1,0 +1,15 @@
+{
+  "extends": ["@vue/tsconfig/tsconfig.dom.json", "./tsconfig.base.json"],
+  "include": ["types/*", "src/**/*", "src/**/*.vue", ".commitlintrc.js"],
+  "exclude": ["src/**/__tests__/*"],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+
+    "paths": {
+      "@/*": ["./src/*"],
+      "#/*": ["./types/*"]
+    },
+    "types": ["vite/client", "unplugin-vue-router/client", "vite-plugin-vue-layouts/client.d.ts"]
+  }
+}

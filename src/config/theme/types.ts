@@ -1,3 +1,5 @@
+import type { ColorPaletteNumber } from './color/types';
+
 type ThemeScheme = 'light' | 'dark' | 'auto';
 type ThemeTabMode = 'button' | 'chrome';
 /** Page animate mode */
@@ -29,6 +31,13 @@ interface ThemeSettingToken {
   colors: ThemeSettingTokenColor;
   boxShadow: ThemeSettingTokenBoxShadow;
 }
+
+type ThemeTokenColor = ThemePaletteColor & ThemeSettingTokenColor;
+/** Theme token CSS variables */
+type ThemeTokenCSSVars = {
+  colors: ThemeTokenColor & { [key: string]: string };
+  boxShadow: ThemeSettingTokenBoxShadow & { [key: string]: string };
+};
 
 /**
  * The layout mode
@@ -68,6 +77,11 @@ interface ThemeOtherColor {
 interface ThemeColor extends ThemeOtherColor {
   primary: string;
 }
+type ThemeColorKey = keyof ThemeColor;
+
+type ThemePaletteColor = {
+  [key in ThemeColorKey | `${ThemeColorKey}-${ColorPaletteNumber}`]: string;
+};
 
 export type {
   ThemeTabMode,
@@ -79,4 +93,7 @@ export type {
   ResetCacheStrategy,
   ThemeOtherColor,
   ThemeColor,
+  ThemeColorKey,
+  ThemePaletteColor,
+  ThemeTokenCSSVars,
 };

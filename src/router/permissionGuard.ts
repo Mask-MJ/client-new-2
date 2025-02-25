@@ -40,37 +40,36 @@ function setupCommonGuard(router: Router) {
 function setupAccessGuard(router: Router) {
   router.beforeEach(async (to) => {
     const userStore = useUserStore();
-
+    const accessToken = userStore.state.accessToken;
+    const coreRouteNames = ['login', '404', '403'];
     // 基本路由，这些路由不需要进入权限拦截
-    if (to.meta.requiresAuth === false) {
-      if (to.path === LOGIN_PATH && userStore.state.accessToken) {
+    if (coreRouteNames.includes(to.name as string)) {
+      if (to.path === LOGIN_PATH && accessToken) {
         return decodeURIComponent((to.query?.redirect as string) || DEFAULT_HOME_PATH);
       }
       return true;
     }
 
-    // // accessToken 检查
-    // if (!userStore.accessToken) {
-    //   // 明确声明忽略权限访问权限，则可以访问
-    //   if (to.meta.ignoreAccess) {
-    //     return true
-    //   }
+    // accessToken 检查
+    if (!accessToken) {
+      // 明确声明忽略权限访问权限，则可以访问
+      if (to.meta.ignoreAccess) {
+        return true;
+      }
 
-    //   // 没有访问权限，跳转登录页面
-    //   if (to.fullPath !== LOGIN_PATH) {
-    //     return {
-    //       path: LOGIN_PATH,
-    //       // 如不需要，直接删除 query
-    //       query:
-    //         to.fullPath === DEFAULT_HOME_PATH
-    //           ? {}
-    //           : { redirect: encodeURIComponent(to.fullPath) },
-    //       // 携带当前跳转的页面，登录后重新跳转该页面
-    //       replace: true,
-    //     }
-    //   }
-    //   return to
-    // }
+      // 没有访问权限，跳转登录页面
+      if (to.fullPath !== LOGIN_PATH) {
+        return {
+          path: LOGIN_PATH,
+          // 如不需要，直接删除 query
+          query:
+            to.fullPath === DEFAULT_HOME_PATH ? {} : { redirect: encodeURIComponent(to.fullPath) },
+          // 携带当前跳转的页面，登录后重新跳转该页面
+          replace: true,
+        };
+      }
+      return to;
+    }
 
     // // 是否已经生成过动态路由
     // if (userStore.isAccessChecked) {

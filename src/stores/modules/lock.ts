@@ -1,33 +1,28 @@
 import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
-interface AppState {
-  /**
-   * 是否锁屏状态
-   */
-  isLockScreen: boolean;
-  /**
-   * 锁屏密码
-   */
-  lockScreenPassword?: string;
-}
+export const useLockStore = defineStore(
+  'lock-store',
+  () => {
+    const isLockScreen = ref(false);
+    const lockScreenPassword = ref<string | undefined>(undefined);
 
-export const useLockStore = defineStore('lock-store', {
-  actions: {
-    lockScreen(password: string) {
-      this.isLockScreen = true;
-      this.lockScreenPassword = password;
-    },
+    function lockScreen(password: string) {
+      isLockScreen.value = true;
+      lockScreenPassword.value = password;
+    }
 
-    unlockScreen() {
-      this.isLockScreen = false;
-      this.lockScreenPassword = undefined;
-    },
+    function unlockScreen() {
+      isLockScreen.value = false;
+      lockScreenPassword.value = undefined;
+    }
+
+    return {
+      isLockScreen,
+      lockScreenPassword,
+      lockScreen,
+      unlockScreen,
+    };
   },
-  persist: {
-    pick: ['isLockScreen', 'lockScreenPassword'],
-  },
-  state: (): AppState => ({
-    isLockScreen: false,
-    lockScreenPassword: undefined,
-  }),
-});
+  { persist: true },
+);

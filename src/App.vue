@@ -1,20 +1,18 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router';
+import { RouterView } from 'vue-router';
+
+const preferencesStore = usePreferencesStore();
+console.log(preferencesStore.naiveTheme);
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
-
   <RouterView />
+  <NConfigProvider :theme-overrides="preferencesStore.naiveTheme" class="h-full">
+    <NButton type="primary">222</NButton>
+    <NaiveProvider>
+      <RouterView class="bg-layout" />
+    </NaiveProvider>
+  </NConfigProvider>
 </template>
 
 <style scoped>

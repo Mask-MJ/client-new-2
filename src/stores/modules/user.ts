@@ -5,6 +5,7 @@ import { getAccessCodesApi, getUserInfoApi, login } from '@/api/system/user';
 import { DEFAULT_HOME_PATH } from '@/config/constants';
 import { $t } from '@/locales';
 import { acceptHMRUpdate, defineStore } from 'pinia';
+import { useRouter } from 'vue-router';
 
 interface UserState {
   /**
@@ -41,62 +42,94 @@ interface UserState {
   userRoles: string[];
 }
 
-export const useUserStore = defineStore('user-store', {
-  actions: {
-    /**
-     * 异步处理登录操作
-     * Asynchronously handle the login process
-     * @param params 登录表单数据
-     */
-    async authLogin(params: SignInParams, onSuccess?: () => Promise<void> | void) {
+export const useUserStore = defineStore(
+  'user-store',
+  () => {
+    const state = reactive<UserState>({
+      accessCodes: [],
+      accessMenus: [],
+      accessToken: null,
+      isAccessChecked: false,
+      loginLoading: false,
+      refreshToken: null,
+      userInfo: null,
+      userRoles: [],
+    });
+
+    const setAccessCodes = (codes: string[]) => {
+      state.accessCodes = codes;
+    };
+
+    const setAccessMenus = (menus: MenuRecordRaw[]) => {
+      state.accessMenus = menus;
+    };
+
+    const setAccessToken = (token: string) => {
+      state.accessToken = token;
+    };
+
+    const setIsAccessChecked = (isChecked: boolean) => {
+      state.isAccessChecked = isChecked;
+    };
+
+    const setRefreshToken = (token: string) => {
+      state.refreshToken = token;
+    };
+
+    const setUserInfo = (info: UserInfo) => {
+      state.userInfo = info;
+      const roles = info?.roles.map((role) => role.name) ?? [];
+      setUserRoles(roles);
+    };
+
+    const setUserRoles = (roles: string[]) => {
+      state.userRoles = roles;
+    };
+
+    const fetchUserInfo = async () => {
+      const { data } = await getUserInfoApi();
+      if (data) {
+        setUserInfo(data);
+      }
+      return data || null;
+    };
+
+    const authLogin = async (params: SignInParams, onSuccess?: () => Promise<void> | void) => {
       const router = useRouter();
-      // 异步处理用户登录操作并获取 accessToken
-      let userInfo: null | UserInfo = null;
+      let userInfoData: null | UserInfo = null;
       try {
-        this.loginLoading = true;
+        state.loginLoading = true;
         const { data } = await login(params);
-        // 如果成功获取到 accessToken
         if (data && data.accessToken) {
-          // 将 accessToken 存储到 accessStore 中
-          this.setAccessToken(data.accessToken);
+          setAccessToken(data.accessToken);
 
-          const { data: accessCodes = [] } = await getAccessCodesApi();
+          const { data: accessCodesData = [] } = await getAccessCodesApi();
 
-          userInfo = await this.fetchUserInfo();
+          userInfoData = await fetchUserInfo();
 
-          this.setAccessCodes(accessCodes);
+          setAccessCodes(accessCodesData);
 
-          onSuccess ? await onSuccess?.() : await router.push(DEFAULT_HOME_PATH);
+          await (onSuccess ? onSuccess() : router.push(DEFAULT_HOME_PATH));
 
-          if (userInfo?.nickname) {
+          if (userInfoData?.nickname) {
             window.$notification.success({
               content: $t('authentication.loginSuccess'),
-              description: `${$t('authentication.loginSuccessDesc')}:${userInfo?.nickname}`,
+              description: `${$t('authentication.loginSuccessDesc')}:${userInfoData?.nickname}`,
               duration: 3000,
             });
           }
         }
       } finally {
-        this.loginLoading = false;
+        state.loginLoading = false;
       }
 
       return {
-        userInfo,
+        userInfo: userInfoData,
       };
-    },
-    /**
-     * 获取用户信息
-     * Get user information
-     */
-    async fetchUserInfo() {
-      const userStore = useUserStore();
-      const { data } = await getUserInfoApi();
-      data && userStore.setUserInfo(data);
-      return data || null;
-    },
+    };
 
-    getMenuByPath(path: string) {
-      function findMenu(menus: MenuRecordRaw[], path: string): MenuRecordRaw | undefined {
+    const getMenuByPath = (path: string) => {
+      const findMenu = (menus: MenuRecordRaw[], path: string): MenuRecordRaw | undefined => {
         for (const menu of menus) {
           if (menu.path === path) {
             return menu;
@@ -108,50 +141,30 @@ export const useUserStore = defineStore('user-store', {
             }
           }
         }
-      }
-      return findMenu(this.accessMenus, path);
-    },
-    setAccessCodes(codes: string[]) {
-      this.accessCodes = codes;
-    },
-    setAccessMenus(menus: MenuRecordRaw[]) {
-      this.accessMenus = menus;
-    },
-    setAccessToken(token: string) {
-      this.accessToken = token;
-    },
-    setIsAccessChecked(isAccessChecked: boolean) {
-      this.isAccessChecked = isAccessChecked;
-    },
-    setRefreshToken(token: string) {
-      this.refreshToken = token;
-    },
-    setUserInfo(userInfo: UserInfo) {
-      // 设置用户信息
-      this.userInfo = userInfo;
-      // 设置角色信息
-      const roles = userInfo?.roles.map((role) => role.name) ?? [];
-      this.setUserRoles(roles);
-    },
-    setUserRoles(roles: string[]) {
-      this.userRoles = roles;
+      };
+      return findMenu(state.accessMenus, path);
+    };
+
+    return {
+      state,
+      setAccessCodes,
+      setAccessMenus,
+      setAccessToken,
+      setIsAccessChecked,
+      setRefreshToken,
+      setUserInfo,
+      setUserRoles,
+      fetchUserInfo,
+      authLogin,
+      getMenuByPath,
+    };
+  },
+  {
+    persist: {
+      pick: ['state.accessToken', 'state.refreshToken', 'state.accessCodes'],
     },
   },
-  persist: {
-    // 持久化
-    pick: ['accessToken', 'refreshToken', 'accessCodes'],
-  },
-  state: (): UserState => ({
-    accessCodes: [],
-    accessMenus: [],
-    accessToken: null,
-    isAccessChecked: false,
-    loginLoading: false,
-    refreshToken: null,
-    userInfo: null,
-    userRoles: [],
-  }),
-});
+);
 
 // 解决热更新问题
 const hot = import.meta.hot;

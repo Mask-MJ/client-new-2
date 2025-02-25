@@ -1,18 +1,94 @@
-import type {
-  AuthPageLayoutType,
-  BreadcrumbStyleType,
-  BuiltinThemeType,
-  ContentCompactType,
-  LayoutHeaderMenuAlignType,
-  LayoutHeaderModeType,
-  LayoutType,
-  LoginExpiredModeType,
-  NavigationStyleType,
-  PageTransitionType,
-  PreferencesButtonPositionType,
-  TabsStyleType,
-  ThemeModeType,
-} from '../types/app';
+type LayoutType =
+  | 'full-content'
+  | 'header-mixed-nav'
+  | 'header-nav'
+  | 'header-sidebar-nav'
+  | 'mixed-nav'
+  | 'sidebar-mixed-nav'
+  | 'sidebar-nav';
+
+type ThemeModeType = 'auto' | 'dark' | 'light';
+
+/**
+ * 偏好设置按钮位置
+ * fixed 固定在右侧
+ * header 顶栏
+ * auto 自动
+ */
+type PreferencesButtonPositionType = 'auto' | 'fixed' | 'header';
+
+type BuiltinThemeType =
+  | 'custom'
+  | 'deep-blue'
+  | 'deep-green'
+  | 'default'
+  | 'gray'
+  | 'green'
+  | 'neutral'
+  | 'orange'
+  | 'pink'
+  | 'red'
+  | 'rose'
+  | 'sky-blue'
+  | 'slate'
+  | 'stone'
+  | 'violet'
+  | 'yellow'
+  | 'zinc'
+  | (Record<never, never> & string);
+
+interface BuiltinThemePreset {
+  color: string;
+  type: BuiltinThemeType;
+}
+
+type ContentCompactType = 'compact' | 'wide';
+
+type LayoutHeaderModeType = 'auto' | 'auto-scroll' | 'fixed' | 'static';
+type LayoutHeaderMenuAlignType = 'center' | 'end' | 'start';
+
+/**
+ * 登录过期模式
+ * modal 弹窗模式
+ * page 页面模式
+ */
+type LoginExpiredModeType = 'modal' | 'page';
+
+/**
+ * 面包屑样式
+ * background 背景
+ * normal 默认
+ */
+type BreadcrumbStyleType = 'background' | 'normal';
+
+/**
+ * 导航风格
+ * plain 朴素
+ * rounded 圆润
+ */
+type NavigationStyleType = 'plain' | 'rounded';
+
+/**
+ * 标签栏风格
+ * brisk 轻快
+ * card 卡片
+ * chrome 谷歌
+ * plain 朴素
+ */
+type TabsStyleType = 'brisk' | 'card' | 'chrome' | 'plain';
+
+/**
+ * 页面切换动画
+ */
+type PageTransitionType = 'fade' | 'fade-down' | 'fade-slide' | 'fade-up';
+
+/**
+ * 页面切换动画
+ * panel-center 居中布局
+ * panel-left 居左布局
+ * panel-right 居右布局
+ */
+type AuthPageLayoutType = 'panel-center' | 'panel-left' | 'panel-right';
 
 type SupportedLanguagesType = 'en-US' | 'zh-CN';
 
@@ -180,17 +256,29 @@ interface TabbarPreferences {
   wheelable: boolean;
 }
 
-interface ThemePreferences {
+interface ThemeColor {
+  /** 主题色 */
+  primaryColor: string;
+  /** 信息色 */
+  infoColor: string;
+  /** 成功色 */
+  successColor: string;
+  /** 警告色 */
+  warningColor: string;
+  /** 错误色 */
+  errorColor: string;
+}
+type NaiveColorScene = '' | 'Suppl' | 'Hover' | 'Pressed' | 'Active';
+type ThemeColorKey = keyof ThemeColor;
+type NaiveColorKey = `${ThemeColorKey}${NaiveColorScene}`;
+interface NaiveColorAction {
+  scene: NaiveColorScene;
+  handler: (color: string) => string;
+}
+
+interface ThemePreferences extends ThemeColor {
   /** 内置主题名 */
   builtinType: BuiltinThemeType;
-  /** 错误色 */
-  colorDestructive: string;
-  /** 主题色 */
-  colorPrimary: string;
-  /** 成功色 */
-  colorSuccess: string;
-  /** 警告色 */
-  colorWarning: string;
   /** 当前主题 */
   mode: ThemeModeType;
   /** 圆角 */
@@ -263,6 +351,24 @@ interface Preferences {
 type PreferencesKeys = keyof Preferences;
 
 export type {
+  AuthPageLayoutType,
+  BreadcrumbStyleType,
+  BuiltinThemeType,
+  BuiltinThemePreset,
+  NaiveColorKey,
+  ContentCompactType,
+  ThemeColor,
+  LayoutHeaderMenuAlignType,
+  ThemeColorKey,
+  NaiveColorAction,
+  LayoutHeaderModeType,
+  LayoutType,
+  LoginExpiredModeType,
+  NavigationStyleType,
+  PageTransitionType,
+  PreferencesButtonPositionType,
+  TabsStyleType,
+  ThemeModeType,
   AppPreferences,
   BreadcrumbPreferences,
   FooterPreferences,

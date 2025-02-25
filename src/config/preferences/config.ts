@@ -1,6 +1,7 @@
-import type { Preferences } from './types';
+import type { Preferences, BuiltinThemePreset } from './types';
 
-const defaultPreferences: Preferences = {
+// 默认偏好设置
+const DEFAULT_PREFERENCES: Preferences = {
   app: {
     authPageLayout: 'panel-right',
     checkUpdatesInterval: 1,
@@ -88,10 +89,11 @@ const defaultPreferences: Preferences = {
   },
   theme: {
     builtinType: 'default',
-    colorDestructive: 'hsl(348 100% 61%)',
-    colorPrimary: 'hsl(212 100% 45%)',
-    colorSuccess: 'hsl(144 57% 58%)',
-    colorWarning: 'hsl(42 84% 61%)',
+    primaryColor: '#18A058FF',
+    infoColor: '#2080F0FF',
+    successColor: '#18A058FF',
+    warningColor: '#F0A020FF',
+    errorColor: '#D03050FF',
     mode: 'dark',
     radius: '0.5',
     semiDarkHeader: false,
@@ -114,5 +116,25 @@ const defaultPreferences: Preferences = {
     themeToggle: true,
   },
 };
+// 内置主题预设
+const BUILT_IN_THEME_PRESETS: BuiltinThemePreset[] = [
+  { color: '#006be6ff', type: 'default' },
+  { color: '#7166f0ff', type: 'violet' },
+  { color: '#e84a6cff', type: 'pink' },
+  { color: '#efbd48ff', type: 'yellow' },
+  { color: '#4e69fdff', type: 'sky-blue' },
+  { color: '#0bd092ff', type: 'green' },
+  { color: '#3f3f46ff', type: 'zinc' },
+  { color: '#0d9496ff', type: 'deep-green' },
+  { color: '#0960beff', type: 'deep-blue' },
+  { color: '#c1420bff', type: 'orange' },
+  { color: '#bb1b1bff', type: 'rose' },
+  { color: '#404040ff', type: 'neutral' },
+  { color: '#344256ff', type: 'slate' },
+  { color: '#384252ff', type: 'gray' },
+  { color: '', type: 'custom' },
+];
+// 首页主题预设
+const COLOR_PRESETS = [...BUILT_IN_THEME_PRESETS].slice(0, 7);
 
-export { defaultPreferences };
+export { DEFAULT_PREFERENCES, BUILT_IN_THEME_PRESETS, COLOR_PRESETS };

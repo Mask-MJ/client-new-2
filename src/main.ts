@@ -1,4 +1,4 @@
-import { preferences } from '@/config/preferences';
+import { DEFAULT_PREFERENCES } from '@/config/preferences';
 import { $t, setupI18n } from '@/locales';
 import { initRouter, router } from '@/router';
 import { initStores } from '@/stores';
@@ -19,9 +19,9 @@ async function bootstrap() {
   initRouter(app);
   // 动态更新标题
   watchEffect(() => {
-    if (preferences.app.dynamicTitle) {
+    if (DEFAULT_PREFERENCES.app.dynamicTitle) {
       const routeTitle = router.currentRoute.value.meta?.title;
-      const pageTitle = (routeTitle ? `${$t(routeTitle)} - ` : '') + preferences.app.name;
+      const pageTitle = (routeTitle ? `${$t(routeTitle)} - ` : '') + DEFAULT_PREFERENCES.app.name;
       useTitle(pageTitle);
     }
   });

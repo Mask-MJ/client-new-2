@@ -8,11 +8,11 @@ const UNPROTECTED_ROUTES = ['/api/authentication/refresh-token', '/api/authentic
 const authMiddleware: Middleware = {
   async onRequest({ request, schemaPath }) {
     // 获取令牌，如果不存在
-    const { accessToken } = useUserStore();
+    const { state } = useUserStore();
     if (UNPROTECTED_ROUTES.some((pathname) => schemaPath.startsWith(pathname))) {
       return undefined; // don’t modify request for certain paths
     }
-    request.headers.set('Authorization', `Bearer ${accessToken}`);
+    request.headers.set('Authorization', `Bearer ${state.accessToken}`);
   },
 
   async onResponse({ response }) {

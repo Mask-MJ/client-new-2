@@ -1,7 +1,7 @@
 import type { Router } from 'vue-router';
 
 import { DEFAULT_HOME_PATH, LOGIN_PATH } from '@/config/constants';
-import { preferences } from '@/config/preferences';
+import { DEFAULT_PREFERENCES } from '@/config/preferences';
 import { useNProgress } from '@vueuse/integrations/useNProgress';
 /**
  * 通用守卫配置
@@ -15,7 +15,7 @@ function setupCommonGuard(router: Router) {
     to.meta.loaded = loadedPaths.has(to.path);
 
     // 页面加载进度条
-    if (!to.meta.loaded && preferences.transition.progress) {
+    if (!to.meta.loaded && DEFAULT_PREFERENCES.transition.progress) {
       isLoading.value = true;
     }
     return true;
@@ -27,7 +27,7 @@ function setupCommonGuard(router: Router) {
     loadedPaths.add(to.path);
 
     // 关闭页面加载进度条
-    if (preferences.transition.progress) {
+    if (DEFAULT_PREFERENCES.transition.progress) {
       isLoading.value = false;
     }
   });
@@ -38,12 +38,12 @@ function setupCommonGuard(router: Router) {
  * @param router
  */
 function setupAccessGuard(router: Router) {
-  router.beforeEach(async (to, from) => {
+  router.beforeEach(async (to) => {
     const userStore = useUserStore();
 
     // 基本路由，这些路由不需要进入权限拦截
     if (to.meta.requiresAuth === false) {
-      if (to.path === LOGIN_PATH && userStore.accessToken) {
+      if (to.path === LOGIN_PATH && userStore.state.accessToken) {
         return decodeURIComponent((to.query?.redirect as string) || DEFAULT_HOME_PATH);
       }
       return true;

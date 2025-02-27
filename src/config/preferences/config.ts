@@ -1,4 +1,4 @@
-import type { Preferences, BuiltinThemePreset } from './types';
+import type { BuiltinThemePreset, Preferences } from './types';
 
 // 默认偏好设置
 const DEFAULT_PREFERENCES: Preferences = {
@@ -89,15 +89,15 @@ const DEFAULT_PREFERENCES: Preferences = {
   },
   theme: {
     builtinType: 'default',
-    primaryColor: '#18A058FF',
-    infoColor: '#2080F0FF',
-    successColor: '#18A058FF',
-    warningColor: '#F0A020FF',
-    errorColor: '#D03050FF',
-    mode: 'dark',
+    error: '#D03050FF',
+    info: '#2080F0FF',
+    mode: 'light',
+    primary: '#18A058FF',
     radius: '0.5',
     semiDarkHeader: false,
     semiDarkSidebar: false,
+    success: '#18A058FF',
+    warning: '#F0A020FF',
   },
   transition: {
     enable: true,
@@ -137,4 +137,4 @@ const BUILT_IN_THEME_PRESETS: BuiltinThemePreset[] = [
 // 首页主题预设
 const COLOR_PRESETS = [...BUILT_IN_THEME_PRESETS].slice(0, 7);
 
-export { DEFAULT_PREFERENCES, BUILT_IN_THEME_PRESETS, COLOR_PRESETS };
+export { BUILT_IN_THEME_PRESETS, COLOR_PRESETS, DEFAULT_PREFERENCES };

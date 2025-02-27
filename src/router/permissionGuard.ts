@@ -1,5 +1,6 @@
 import type { Router } from 'vue-router';
 
+import { getMenuList } from '@/api/system/menu';
 import { DEFAULT_HOME_PATH, LOGIN_PATH } from '@/config/constants';
 import { DEFAULT_PREFERENCES } from '@/config/preferences';
 import { useNProgress } from '@vueuse/integrations/useNProgress';
@@ -11,6 +12,7 @@ function setupCommonGuard(router: Router) {
   // 记录已经加载的页面
   const loadedPaths = new Set<string>();
   const { isLoading } = useNProgress();
+  console.log(isLoading);
   router.beforeEach(async (to) => {
     to.meta.loaded = loadedPaths.has(to.path);
 
@@ -38,53 +40,51 @@ function setupCommonGuard(router: Router) {
  * @param router
  */
 function setupAccessGuard(router: Router) {
-  router.beforeEach(async (to) => {
+  router.beforeEach(async (to, from) => {
     const userStore = useUserStore();
-    const accessToken = userStore.state.accessToken;
-    const coreRouteNames = ['login', '404', '403'];
-    // 基本路由，这些路由不需要进入权限拦截
-    if (coreRouteNames.includes(to.name as string)) {
+    const accessToken = userStore.accessToken;
+    // 明确声明忽略权限访问权限，则可以访问
+    if (to.meta.ignoreAccess) {
       if (to.path === LOGIN_PATH && accessToken) {
         return decodeURIComponent((to.query?.redirect as string) || DEFAULT_HOME_PATH);
       }
       return true;
     }
-
     // accessToken 检查
     if (!accessToken) {
-      // 明确声明忽略权限访问权限，则可以访问
-      if (to.meta.ignoreAccess) {
-        return true;
-      }
-
       // 没有访问权限，跳转登录页面
-      if (to.fullPath !== LOGIN_PATH) {
-        return {
-          path: LOGIN_PATH,
-          // 如不需要，直接删除 query
-          query:
-            to.fullPath === DEFAULT_HOME_PATH ? {} : { redirect: encodeURIComponent(to.fullPath) },
-          // 携带当前跳转的页面，登录后重新跳转该页面
-          replace: true,
-        };
-      }
-      return to;
+      return {
+        path: LOGIN_PATH,
+        query:
+          to.fullPath === DEFAULT_HOME_PATH ? {} : { redirect: encodeURIComponent(to.fullPath) },
+        replace: true,
+      };
     }
 
-    // // 是否已经生成过动态路由
-    // if (userStore.isAccessChecked) {
-    //   return true
-    // }
+    // 判断是否有用户信息
+    if (!userStore.userInfo) {
+      await userStore.fetchUserInfo();
+    }
 
-    // // 保存菜单信息和路由信息
-    // userStore.setAccessMenus([])
-    // userStore.setIsAccessChecked(true)
-    // const redirectPath = (from.query.redirect ?? (to.path === DEFAULT_HOME_PATH ? DEFAULT_HOME_PATH : to.fullPath)) as string
+    if (userStore.accessMenus.length === 0) {
+      const { data } = await getMenuList();
+      console.log(data);
+    }
 
-    // return {
-    //   ...router.resolve(decodeURIComponent(redirectPath)),
-    //   replace: true,
-    // }
+    // 生成路由表
+    // 当前登录用户拥有的角色标识列表
+    // const userInfo = userStore.userInfo || (await userStore.fetchUserInfo());
+    // const userRoles = userInfo?.roles ?? [];
+
+    return true;
+
+    // 保存菜单信息和路由信息
+    // userStore.setAccessMenus([]);
+    // userStore.setIsAccessChecked(true);
+    // const redirectPath = (from.query.redirect ??
+    //   (to.path === DEFAULT_HOME_PATH ? DEFAULT_HOME_PATH : to.fullPath)) as string;
+
+    // return { ...router.resolve(decodeURIComponent(redirectPath)), replace: true };
   });
 }
 

@@ -1,3 +1,3 @@
-export type * from './types';
-export * from './config';
 export * from './color';
+export * from './config';
+export type * from './types';

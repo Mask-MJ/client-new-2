@@ -1,9 +1,10 @@
 import type { RouteLocationNormalized, Router, RouteRecordNormalized } from 'vue-router';
 
+import { computed, ref } from 'vue';
+
 import { openRouteInNewWindow } from '@/utils';
 import { useNProgress } from '@vueuse/integrations/useNProgress';
 import { acceptHMRUpdate, defineStore } from 'pinia';
-import { ref, computed } from 'vue';
 
 type TabDefinition = RouteLocationNormalized;
 
@@ -405,23 +406,23 @@ export const useTabbarStore = defineStore(
     }
 
     return {
-      state,
-      affixTabs,
-      getCachedTabs,
-      getExcludeCachedTabs,
-      getTabs,
+      ...state,
       _bulkCloseByPaths,
       _close,
       _goToDefaultTab,
       _goToTab,
       addTab,
+      affixTabs,
       closeAllTabs,
       closeLeftTabs,
       closeOtherTabs,
       closeRightTabs,
       closeTab,
       closeTabByKey,
+      getCachedTabs,
+      getExcludeCachedTabs,
       getTabByPath,
+      getTabs,
       openTabInNewWindow,
       pinTab,
       refresh,

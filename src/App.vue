@@ -1,80 +1,54 @@
 <script setup lang="ts">
+import type { WatermarkProps } from 'naive-ui';
+
 import { RouterView } from 'vue-router';
 
-const preferencesStore = usePreferencesStore();
-console.log(preferencesStore.naiveTheme);
+import { darkTheme, dateEnUS, dateZhCN, enUS, zhCN } from 'naive-ui';
+
+import { getNaiveTheme } from './config/preferences';
+
+const { appConfig, themeConfig } = usePreferencesStore();
+const { userInfo } = useUserStore();
+const naiveTheme = computed(() => {
+  const { error, info, primary, success, warning } = themeConfig;
+  return getNaiveTheme({ error, info, primary, success, warning });
+});
+console.log('naiveTheme', naiveTheme);
+
+const naiveDarkTheme = computed(() => (themeConfig.mode === 'dark' ? darkTheme : undefined));
+const naiveLocale = computed(() => (appConfig.locale === 'zh-CN' ? zhCN : enUS));
+const naiveDateLocale = computed(() => (appConfig.locale === 'zh-CN' ? dateZhCN : dateEnUS));
+
+const watermarkProps = computed<WatermarkProps>(() => {
+  return {
+    content: userInfo?.username || appConfig.name,
+    cross: true,
+    fullscreen: true,
+    fontSize: 16,
+    lineHeight: 16,
+    width: 384,
+    height: 384,
+    xOffset: 12,
+    yOffset: 60,
+    rotate: -15,
+    zIndex: 9999,
+  };
+});
 </script>
 
 <template>
-  <RouterView />
-  <NConfigProvider :theme-overrides="preferencesStore.naiveTheme" class="h-full">
-    <NButton type="primary">222</NButton>
+  <NConfigProvider
+    :theme="naiveDarkTheme"
+    :theme-overrides="naiveTheme"
+    :locale="naiveLocale"
+    :date-locale="naiveDateLocale"
+    class="h-full"
+  >
     <NaiveProvider>
       <RouterView class="bg-layout" />
+      <NWatermark v-if="appConfig.watermark" v-bind="watermarkProps" />
     </NaiveProvider>
   </NConfigProvider>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
-}
-</style>
+<style scoped></style>

@@ -1,11 +1,12 @@
 import type { SignInParams, UserInfo } from '@/api/system/user';
 import type { MenuRecordRaw } from '@/config/types/menu';
 
+import { useRouter } from 'vue-router';
+
 import { getAccessCodesApi, getUserInfoApi, login } from '@/api/system/user';
 import { DEFAULT_HOME_PATH } from '@/config/constants';
 import { $t } from '@/locales';
 import { acceptHMRUpdate, defineStore } from 'pinia';
-import { useRouter } from 'vue-router';
 
 interface UserState {
   /**
@@ -20,10 +21,6 @@ interface UserState {
    * 登录 accessToken
    */
   accessToken: null | string;
-  /**
-   * 是否已经检查过权限
-   */
-  isAccessChecked: boolean;
   /**
    * 登录中
    */
@@ -49,7 +46,6 @@ export const useUserStore = defineStore(
       accessCodes: [],
       accessMenus: [],
       accessToken: null,
-      isAccessChecked: false,
       loginLoading: false,
       refreshToken: null,
       userInfo: null,
@@ -66,10 +62,6 @@ export const useUserStore = defineStore(
 
     const setAccessToken = (token: string) => {
       state.accessToken = token;
-    };
-
-    const setIsAccessChecked = (isChecked: boolean) => {
-      state.isAccessChecked = isChecked;
     };
 
     const setRefreshToken = (token: string) => {
@@ -146,17 +138,16 @@ export const useUserStore = defineStore(
     };
 
     return {
-      state,
+      ...state,
+      authLogin,
+      fetchUserInfo,
+      getMenuByPath,
       setAccessCodes,
       setAccessMenus,
       setAccessToken,
-      setIsAccessChecked,
       setRefreshToken,
       setUserInfo,
       setUserRoles,
-      fetchUserInfo,
-      authLogin,
-      getMenuByPath,
     };
   },
   {

@@ -7,8 +7,15 @@ import {
   transformerVariantGroup,
 } from 'unocss';
 
+import { themeVars } from './src/config/preferences/vars';
+
+console.log(themeVars);
+
 export default defineConfig({
   presets: [presetUno(), presetIcons(), presetTypography()],
+  theme: {
+    ...themeVars,
+  },
   shortcuts: [
     [
       'btn',

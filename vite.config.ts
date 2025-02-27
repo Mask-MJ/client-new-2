@@ -1,12 +1,13 @@
 import type { ConfigEnv } from 'vite';
 
+import path from 'node:path';
+import process from 'node:process';
+import { fileURLToPath, URL } from 'node:url';
+
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite';
 import { unheadVueComposablesImports } from '@unhead/vue';
 import Vue from '@vitejs/plugin-vue';
 import VueJsx from '@vitejs/plugin-vue-jsx';
-import path from 'node:path';
-import process from 'node:process';
-import { fileURLToPath, URL } from 'node:url';
 import Unocss from 'unocss/vite';
 import AutoImport from 'unplugin-auto-import/vite';
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers';

@@ -1,6 +1,6 @@
 interface Window {
-  $loadingBar: import('naive-ui').LoadingBarProviderInst
-  $dialog: import('naive-ui').DialogProviderInst
-  $message: import('naive-ui').MessageProviderInst
-  $notification: import('naive-ui').NotificationProviderInst
+  $dialog: import('naive-ui').DialogProviderInst;
+  $loadingBar: import('naive-ui').LoadingBarProviderInst;
+  $message: import('naive-ui').MessageProviderInst;
+  $notification: import('naive-ui').NotificationProviderInst;
 }

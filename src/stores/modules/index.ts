@@ -1,4 +1,4 @@
-export * from './user';
-export * from './tabbar';
 export * from './lock';
 export * from './preferences';
+export * from './tabbar';
+export * from './user';

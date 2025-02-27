@@ -9,11 +9,11 @@ function registerNaiveTools() {
 
 const NaiveProviderContent = defineComponent({
   name: 'NaiveProviderContent',
-  render() {
-    return h('div');
-  },
   setup() {
     registerNaiveTools();
+  },
+  render() {
+    return h('div');
   },
 });
 </script>
@@ -23,7 +23,7 @@ const NaiveProviderContent = defineComponent({
     <n-dialog-provider>
       <n-notification-provider>
         <n-message-provider>
-          <slot />
+          <slot></slot>
           <NaiveProviderContent />
         </n-message-provider>
       </n-notification-provider>

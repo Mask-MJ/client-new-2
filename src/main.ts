@@ -1,12 +1,13 @@
+import { createApp } from 'vue';
+
 import { DEFAULT_PREFERENCES } from '@/config/preferences';
 import { $t, setupI18n } from '@/locales';
 import { initRouter, router } from '@/router';
 import { initStores } from '@/stores';
-import { createApp } from 'vue';
 
 import App from './App.vue';
 
-import '@unocss/reset/normalize.css';
+import './plugins/assets';
 
 async function bootstrap() {
   const app = createApp(App);

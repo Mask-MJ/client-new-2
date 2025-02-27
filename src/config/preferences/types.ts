@@ -258,22 +258,29 @@ interface TabbarPreferences {
 
 interface ThemeColor {
   /** 主题色 */
-  primaryColor: string;
+  primary: string;
   /** 信息色 */
-  infoColor: string;
+  info: string;
   /** 成功色 */
-  successColor: string;
+  success: string;
   /** 警告色 */
-  warningColor: string;
+  warning: string;
   /** 错误色 */
-  errorColor: string;
+  error: string;
 }
-type NaiveColorScene = '' | 'Suppl' | 'Hover' | 'Pressed' | 'Active';
+type NaiveColorScene = '' | 'Active' | 'Hover' | 'Pressed' | 'Suppl';
+type ColorPaletteNumber = 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950;
 type ThemeColorKey = keyof ThemeColor;
-type NaiveColorKey = `${ThemeColorKey}${NaiveColorScene}`;
+type NaiveColorKey = `${ThemeColorKey}Color${NaiveColorScene}`;
+type ThemePaletteColor = {
+  [key in `${ThemeColorKey}-${ColorPaletteNumber}` | ThemeColorKey]: string;
+};
+type ThemeColors = {
+  [key in ColorPaletteNumber]: string;
+};
 interface NaiveColorAction {
-  scene: NaiveColorScene;
   handler: (color: string) => string;
+  scene: NaiveColorScene;
 }
 
 interface ThemePreferences extends ThemeColor {
@@ -351,36 +358,39 @@ interface Preferences {
 type PreferencesKeys = keyof Preferences;
 
 export type {
+  AppPreferences,
   AuthPageLayoutType,
+  BreadcrumbPreferences,
   BreadcrumbStyleType,
-  BuiltinThemeType,
   BuiltinThemePreset,
-  NaiveColorKey,
+  BuiltinThemeType,
+  ColorPaletteNumber,
   ContentCompactType,
-  ThemeColor,
+  FooterPreferences,
+  HeaderPreferences,
   LayoutHeaderMenuAlignType,
-  ThemeColorKey,
-  NaiveColorAction,
   LayoutHeaderModeType,
   LayoutType,
   LoginExpiredModeType,
+  LogoPreferences,
+  NaiveColorAction,
+  NaiveColorKey,
+  NavigationPreferences,
   NavigationStyleType,
   PageTransitionType,
-  PreferencesButtonPositionType,
-  TabsStyleType,
-  ThemeModeType,
-  AppPreferences,
-  BreadcrumbPreferences,
-  FooterPreferences,
-  HeaderPreferences,
-  LogoPreferences,
-  NavigationPreferences,
   Preferences,
+  PreferencesButtonPositionType,
   PreferencesKeys,
   ShortcutKeyPreferences,
   SidebarPreferences,
   SupportedLanguagesType,
   TabbarPreferences,
+  TabsStyleType,
+  ThemeColor,
+  ThemeColorKey,
+  ThemeColors,
+  ThemeModeType,
+  ThemePaletteColor,
   ThemePreferences,
   TransitionPreferences,
   WidgetPreferences,

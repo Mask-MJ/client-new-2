@@ -2,17 +2,19 @@ import type { paths } from '#/openapi'; // 由openapi-typescript生成
 import type { Middleware } from 'openapi-fetch';
 
 import createClient from 'openapi-fetch';
+import { storeToRefs } from 'pinia';
 
 const UNPROTECTED_ROUTES = ['/api/authentication/refresh-token', '/api/authentication/sign-in'];
 
 const authMiddleware: Middleware = {
   async onRequest({ request, schemaPath }) {
     // 获取令牌，如果不存在
-    const { state } = useUserStore();
+    const userStore = useUserStore();
+    const { accessToken } = storeToRefs(userStore);
     if (UNPROTECTED_ROUTES.some((pathname) => schemaPath.startsWith(pathname))) {
       return undefined; // don’t modify request for certain paths
     }
-    request.headers.set('Authorization', `Bearer ${state.accessToken}`);
+    request.headers.set('Authorization', `Bearer ${accessToken}`);
   },
 
   async onResponse({ response }) {

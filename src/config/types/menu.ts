@@ -14,15 +14,15 @@ interface MenuRecordBadgeRaw {
   /**
    * 徽标
    */
-  badge?: string;
+  badge: null | string;
   /**
    * 徽标类型
    */
-  badgeType?: 'dot' | 'normal';
+  badgeType: 'dot' | 'normal' | null | string;
   /**
    * 徽标颜色
    */
-  badgeVariants?: 'destructive' | 'primary' | string;
+  badgeVariants?: 'destructive' | 'primary' | null | string;
 }
 
 /**
@@ -32,7 +32,7 @@ interface MenuRecordRaw extends MenuRecordBadgeRaw {
   /**
    * 激活时的图标名
    */
-  activeIcon?: string;
+  activeIcon: null | string;
   /**
    * 子菜单
    */
@@ -53,15 +53,7 @@ interface MenuRecordRaw extends MenuRecordBadgeRaw {
   /**
    * 排序号
    */
-  order?: number;
-  /**
-   * 父级路径
-   */
-  parent?: string;
-  /**
-   * 所有父级路径
-   */
-  parents?: string[];
+  sort?: number;
   /**
    * 菜单路径，唯一，可当作key
    */

@@ -1,4 +1,4 @@
-import type { Preferences } from '@/config/preferences';
+import type { Preferences, ThemeColor } from '@/config/preferences';
 
 import {
   createThemeToken,
@@ -14,30 +14,23 @@ export const usePreferencesStore = defineStore(
   'preferences-store',
   () => {
     const state = ref<Preferences>(initPreferences());
-
+    const { css } = useStyleTag('', { id: 'theme-vars' });
     // 更新偏好设置
     const updatePreferences = (preferences: Partial<Preferences>) => {
       state.value = merge({}, state.value, preferences);
     };
     // 重置偏好设置
-    function resetPreferences() {
+    function resetState() {
       state.value = DEFAULT_PREFERENCES;
     }
-
-    /** Setup theme vars to global */
-    function setupThemeVarsToGlobal() {
-      const { themeTokens, darkThemeTokens } = createThemeToken(themeColors.value);
-      // addThemeVarsToGlobal(themeTokens, darkThemeTokens);
+    // 设置主题颜色, 注入全局css变量
+    function setupThemeVarsToGlobal(val: ThemeColor) {
+      const { themeTokens, darkThemeTokens } = createThemeToken(val);
       const cssVarStr = getCssVarByTokens(themeTokens);
       const darkCssVarStr = getCssVarByTokens(darkThemeTokens);
-      const css = `:root{${cssVarStr}}`;
-
-      const darkCss = `html.dark{${darkCssVarStr}}`;
-      useStyleTag(css + darkCss, { id: 'theme-vars' });
+      css.value = `:root{${cssVarStr}} html.dark{${darkCssVarStr}}`;
     }
 
-    const appConfig = computed(() => state.value.app);
-    const themeConfig = computed(() => state.value.theme);
     const themeColors = computed(() => {
       const { error, info, primary, success, warning } = state.value.theme;
       return { error, info, primary, success, warning };
@@ -46,17 +39,14 @@ export const usePreferencesStore = defineStore(
     watch(
       themeColors,
       (val) => {
-        console.log('themeColors', val);
-        setupThemeVarsToGlobal();
+        setupThemeVarsToGlobal(val);
       },
       { immediate: true },
     );
 
     return {
-      ...state,
-      appConfig,
-      themeConfig,
-      $reset: resetPreferences,
+      ...state.value,
+      $reset: resetState,
       updatePreferences,
     };
   },

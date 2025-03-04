@@ -26,7 +26,6 @@ async function bootstrap() {
       useTitle(pageTitle);
     }
   });
-
   app.mount('#app');
 }
 

@@ -3,6 +3,7 @@ import type { MenuRecordRaw } from '@/config/types/menu';
 
 import { useRouter } from 'vue-router';
 
+import { getMenuList } from '@/api/system/menu';
 import { getAccessCodesApi, getUserInfoApi, login } from '@/api/system/user';
 import { DEFAULT_HOME_PATH } from '@/config/constants';
 import { $t } from '@/locales';
@@ -17,6 +18,10 @@ interface UserState {
    * 可访问的菜单列表
    */
   accessMenus: MenuRecordRaw[];
+  /**
+   * 是否已经检查过权限
+   */
+  isAccessChecked: boolean;
   /**
    * 登录 accessToken
    */
@@ -42,40 +47,45 @@ interface UserState {
 export const useUserStore = defineStore(
   'user-store',
   () => {
-    const state = reactive<UserState>({
+    const state = ref<UserState>({
       accessCodes: [],
       accessMenus: [],
-      accessToken: null,
+      accessToken: '',
       loginLoading: false,
-      refreshToken: null,
-      userInfo: null,
+      refreshToken: '',
+      isAccessChecked: false,
+      userInfo: {},
       userRoles: [],
     });
 
     const setAccessCodes = (codes: string[]) => {
-      state.accessCodes = codes;
+      state.value.accessCodes = codes;
     };
 
-    const setAccessMenus = (menus: MenuRecordRaw[]) => {
-      state.accessMenus = menus;
+    const setAccessMenus = (menus: MenuRecordRaw[] = []) => {
+      state.value.accessMenus = menus;
     };
 
     const setAccessToken = (token: string) => {
-      state.accessToken = token;
+      state.value.accessToken = token;
     };
 
     const setRefreshToken = (token: string) => {
-      state.refreshToken = token;
+      state.value.refreshToken = token;
+    };
+
+    const setIsAccessChecked = (isAccessChecked: boolean) => {
+      state.value.isAccessChecked = isAccessChecked;
     };
 
     const setUserInfo = (info: UserInfo) => {
-      state.userInfo = info;
+      state.value.userInfo = info;
       const roles = info?.roles.map((role) => role.name) ?? [];
       setUserRoles(roles);
     };
 
     const setUserRoles = (roles: string[]) => {
-      state.userRoles = roles;
+      state.value.userRoles = roles;
     };
 
     const fetchUserInfo = async () => {
@@ -90,7 +100,7 @@ export const useUserStore = defineStore(
       const router = useRouter();
       let userInfoData: null | UserInfo = null;
       try {
-        state.loginLoading = true;
+        state.value.loginLoading = true;
         const { data } = await login(params);
         if (data && data.accessToken) {
           setAccessToken(data.accessToken);
@@ -112,12 +122,18 @@ export const useUserStore = defineStore(
           }
         }
       } finally {
-        state.loginLoading = false;
+        state.value.loginLoading = false;
       }
 
       return {
         userInfo: userInfoData,
       };
+    };
+
+    const fetchMenuList = async () => {
+      const { data } = await getMenuList();
+      setAccessMenus(data);
+      return data || [];
     };
 
     const getMenuByPath = (path: string) => {
@@ -134,25 +150,42 @@ export const useUserStore = defineStore(
           }
         }
       };
-      return findMenu(state.accessMenus, path);
+      return findMenu(state.value.accessMenus, path);
+    };
+
+    const resetState = () => {
+      state.value = {
+        accessCodes: [],
+        accessMenus: [],
+        accessToken: '',
+        loginLoading: false,
+        refreshToken: '',
+        isAccessChecked: false,
+        userInfo: {},
+        userRoles: [],
+      };
     };
 
     return {
-      ...state,
+      ...state.value,
+      $reset: resetState,
+
       authLogin,
-      fetchUserInfo,
+      fetchMenuList,
       getMenuByPath,
       setAccessCodes,
       setAccessMenus,
       setAccessToken,
       setRefreshToken,
+      setIsAccessChecked,
       setUserInfo,
+      fetchUserInfo,
       setUserRoles,
     };
   },
   {
     persist: {
-      pick: ['state.accessToken', 'state.refreshToken', 'state.accessCodes'],
+      pick: ['accessToken', 'refreshToken', 'accessCodes'],
     },
   },
 );

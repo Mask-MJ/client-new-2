@@ -9,10 +9,17 @@ import {
 
 import { themeVars } from './src/config/preferences/vars';
 
-console.log(themeVars);
-
 export default defineConfig({
-  presets: [presetUno(), presetIcons(), presetTypography()],
+  presets: [
+    presetUno(),
+    presetIcons({
+      collections: {
+        // mdi: () => import('@iconify-json/mdi/icons.json').then(i => i.default),
+        lucide: () => import('@iconify-json/lucide/icons.json').then((i) => i.default),
+      },
+    }),
+    presetTypography(),
+  ],
   theme: {
     ...themeVars,
   },

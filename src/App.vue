@@ -4,24 +4,25 @@ import type { WatermarkProps } from 'naive-ui';
 import { RouterView } from 'vue-router';
 
 import { darkTheme, dateEnUS, dateZhCN, enUS, zhCN } from 'naive-ui';
+import { storeToRefs } from 'pinia';
 
 import { getNaiveTheme } from './config/preferences';
 
-const { appConfig, themeConfig } = usePreferencesStore();
-const { userInfo } = useUserStore();
+const userStore = useUserStore();
+const preferencesStore = usePreferencesStore();
+const { userInfo } = storeToRefs(userStore);
+const { app, theme } = storeToRefs(preferencesStore);
 const naiveTheme = computed(() => {
-  const { error, info, primary, success, warning } = themeConfig;
+  const { error, info, primary, success, warning } = theme.value;
   return getNaiveTheme({ error, info, primary, success, warning });
 });
-console.log('naiveTheme', naiveTheme);
 
-const naiveDarkTheme = computed(() => (themeConfig.mode === 'dark' ? darkTheme : undefined));
-const naiveLocale = computed(() => (appConfig.locale === 'zh-CN' ? zhCN : enUS));
-const naiveDateLocale = computed(() => (appConfig.locale === 'zh-CN' ? dateZhCN : dateEnUS));
-
+const naiveDarkTheme = computed(() => (theme.value.mode === 'dark' ? darkTheme : undefined));
+const naiveLocale = computed(() => (app.value.locale === 'zh-CN' ? zhCN : enUS));
+const naiveDateLocale = computed(() => (app.value.locale === 'zh-CN' ? dateZhCN : dateEnUS));
 const watermarkProps = computed<WatermarkProps>(() => {
   return {
-    content: userInfo?.username || appConfig.name,
+    content: userInfo.value?.username || app.value.name,
     cross: true,
     fullscreen: true,
     fontSize: 16,
@@ -46,7 +47,7 @@ const watermarkProps = computed<WatermarkProps>(() => {
   >
     <NaiveProvider>
       <RouterView class="bg-layout" />
-      <NWatermark v-if="appConfig.watermark" v-bind="watermarkProps" />
+      <NWatermark v-if="app.watermark" v-bind="watermarkProps" />
     </NaiveProvider>
   </NConfigProvider>
 </template>

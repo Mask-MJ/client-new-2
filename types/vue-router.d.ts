@@ -23,11 +23,6 @@ declare module 'vue-router' {
      */
     affixTabOrder?: number;
     /**
-     * 需要特定的角色标识才可以访问
-     * @default []
-     */
-    authority?: string[];
-    /**
      * 徽标
      */
     badge?: string;
@@ -38,7 +33,7 @@ declare module 'vue-router' {
     /**
      * 徽标颜色
      */
-    badgeVariants?: 'default' | 'destructive' | 'primary' | 'success' | 'warning' | string;
+    badgeVariants?: 'default' | 'primary' | 'success' | 'warning' | string;
     /**
      * 当前路由的子级在菜单中不展现
      * @default false

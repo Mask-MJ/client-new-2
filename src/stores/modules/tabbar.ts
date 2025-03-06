@@ -3,59 +3,28 @@ import type { RouteLocationNormalized, Router, RouteRecordNormalized } from 'vue
 import { computed, ref } from 'vue';
 
 import { openRouteInNewWindow } from '@/utils';
-import { useNProgress } from '@vueuse/integrations/useNProgress';
 import { acceptHMRUpdate, defineStore } from 'pinia';
 
 type TabDefinition = RouteLocationNormalized;
 
-interface TabbarState {
-  /**
-   * @zh_CN 当前打开的标签页列表缓存
-   */
-  cachedTabs: Set<string>;
-  /**
-   * @zh_CN 拖拽结束的索引
-   */
-  dragEndIndex: number;
-  /**
-   * @zh_CN 需要排除缓存的标签页
-   */
-  excludeCachedTabs: Set<string>;
-  /**
-   * @zh_CN 是否加载中
-   */
-  isLoading: boolean;
-  /**
-   * @zh_CN 是否刷新
-   */
-  renderRouteView?: boolean;
-  /**
-   * @zh_CN 当前打开的标签页列表
-   */
-  tabs: TabDefinition[];
-  /**
-   * @zh_CN 更新时间，用于一些更新场景，使用watch深度监听的话，会损耗性能
-   */
-  updateTime?: number;
-}
-
-const { isLoading } = useNProgress();
-
 export const useTabbarStore = defineStore(
   'tabbar-store',
   () => {
-    const state = ref<TabbarState>({
-      cachedTabs: new Set(),
-      dragEndIndex: 0,
-      excludeCachedTabs: new Set(),
-      isLoading: isLoading.value,
-      renderRouteView: true,
-      tabs: [],
-      updateTime: Date.now(),
-    });
+    // 当前打开的标签页列表缓存
+    const cachedTabs = ref<Set<string>>(new Set());
+    // 拖拽结束的索引
+    const dragEndIndex = ref<number>(0);
+    // 需要排除缓存的标签页
+    const excludeCachedTabs = ref<Set<string>>(new Set());
+    // 是否刷新
+    const renderRouteView = ref<boolean>(true);
+    // 当前打开的标签页列表
+    const tabs = ref<TabDefinition[]>([]);
+    // 更新时间，用于一些更新场景，使用watch深度监听的话，会损耗性能
+    const updateTime = ref<number>(Date.now());
 
     const affixTabs = computed(() => {
-      return state.value.tabs
+      return tabs.value
         .filter((tab) => isAffixTab(tab))
         .sort((a, b) => {
           const orderA = (a.meta?.affixTabOrder ?? 0) as number;
@@ -64,10 +33,10 @@ export const useTabbarStore = defineStore(
         });
     });
 
-    const getCachedTabs = computed(() => [...state.value.cachedTabs]);
-    const getExcludeCachedTabs = computed(() => [...state.value.excludeCachedTabs]);
+    const getCachedTabs = computed(() => [...cachedTabs.value]);
+    const getExcludeCachedTabs = computed(() => [...excludeCachedTabs.value]);
     const getTabs = computed(() => {
-      const normalTabs = state.value.tabs.filter((tab) => !isAffixTab(tab));
+      const normalTabs = tabs.value.filter((tab) => !isAffixTab(tab));
       return [...affixTabs.value, ...normalTabs].filter(Boolean);
     });
 
@@ -114,7 +83,7 @@ export const useTabbarStore = defineStore(
     }
 
     async function _bulkCloseByPaths(paths: string[]) {
-      state.value.tabs = state.value.tabs.filter((item) => !paths.includes(getTabPath(item)));
+      tabs.value = tabs.value.filter((item) => !paths.includes(getTabPath(item)));
       await updateCacheTabs();
     }
 
@@ -123,8 +92,8 @@ export const useTabbarStore = defineStore(
       if (isAffixTab(tab)) {
         return;
       }
-      const index = state.value.tabs.findIndex((item) => item.fullPath === fullPath);
-      if (index !== -1) state.value.tabs.splice(index, 1);
+      const index = tabs.value.findIndex((item) => item.fullPath === fullPath);
+      if (index !== -1) tabs.value.splice(index, 1);
     }
 
     async function _goToDefaultTab(router: Router) {
@@ -153,23 +122,21 @@ export const useTabbarStore = defineStore(
         return;
       }
 
-      const tabIndex = state.value.tabs.findIndex(
-        (tab) => getTabPath(tab) === getTabPath(routeTab),
-      );
+      const tabIndex = tabs.value.findIndex((tab) => getTabPath(tab) === getTabPath(routeTab));
 
       if (tabIndex === -1) {
         const maxNumOfOpenTab = (routeTab?.meta?.maxNumOfOpenTab ?? -1) as number;
         if (
           maxNumOfOpenTab > 0 &&
-          state.value.tabs.filter((tab) => tab.name === routeTab.name).length >= maxNumOfOpenTab
+          tabs.value.filter((tab) => tab.name === routeTab.name).length >= maxNumOfOpenTab
         ) {
-          const index = state.value.tabs.findIndex((item) => item.name === routeTab.name);
-          if (index !== -1) state.value.tabs.splice(index, 1);
+          const index = tabs.value.findIndex((item) => item.name === routeTab.name);
+          if (index !== -1) tabs.value.splice(index, 1);
         }
 
-        state.value.tabs.push(tab);
+        tabs.value.push(tab);
       } else {
-        const currentTab = toRaw(state.value.tabs)[tabIndex];
+        const currentTab = toRaw(tabs.value)[tabIndex];
         const mergedTab = {
           ...currentTab,
           ...tab,
@@ -185,26 +152,26 @@ export const useTabbarStore = defineStore(
           }
         }
 
-        state.value.tabs.splice(tabIndex, 1, mergedTab);
+        tabs.value.splice(tabIndex, 1, mergedTab);
       }
       updateCacheTabs();
     }
 
     async function closeAllTabs(router: Router) {
-      const newTabs = state.value.tabs.filter((tab) => isAffixTab(tab));
-      state.value.tabs = newTabs.length > 0 ? newTabs : [...state.value.tabs].splice(0, 1);
+      const newTabs = tabs.value.filter((tab) => isAffixTab(tab));
+      tabs.value = newTabs.length > 0 ? newTabs : [...tabs.value].splice(0, 1);
       await _goToDefaultTab(router);
       updateCacheTabs();
     }
 
     async function closeLeftTabs(tab: TabDefinition) {
-      const index = state.value.tabs.findIndex((item) => getTabPath(item) === getTabPath(tab));
+      const index = tabs.value.findIndex((item) => getTabPath(item) === getTabPath(tab));
 
       if (index < 1) {
         return;
       }
 
-      const leftTabs = state.value.tabs.slice(0, index);
+      const leftTabs = tabs.value.slice(0, index);
       const paths: string[] = [];
 
       for (const item of leftTabs) {
@@ -216,13 +183,13 @@ export const useTabbarStore = defineStore(
     }
 
     async function closeOtherTabs(tab: TabDefinition) {
-      const closePaths = state.value.tabs.map((item) => getTabPath(item));
+      const closePaths = tabs.value.map((item) => getTabPath(item));
 
       const paths: string[] = [];
 
       for (const path of closePaths) {
         if (path !== tab.fullPath) {
-          const closeTab = state.value.tabs.find((item) => getTabPath(item) === path);
+          const closeTab = tabs.value.find((item) => getTabPath(item) === path);
           if (!closeTab) {
             continue;
           }
@@ -235,10 +202,10 @@ export const useTabbarStore = defineStore(
     }
 
     async function closeRightTabs(tab: TabDefinition) {
-      const index = state.value.tabs.findIndex((item) => getTabPath(item) === getTabPath(tab));
+      const index = tabs.value.findIndex((item) => getTabPath(item) === getTabPath(tab));
 
-      if (index !== -1 && index < state.value.tabs.length - 1) {
-        const rightTabs = state.value.tabs.slice(index + 1);
+      if (index !== -1 && index < tabs.value.length - 1) {
+        const rightTabs = tabs.value.slice(index + 1);
 
         const paths: string[] = [];
         for (const item of rightTabs) {
@@ -278,12 +245,12 @@ export const useTabbarStore = defineStore(
 
     async function closeTabByKey(key: string, router: Router) {
       const originKey = decodeURIComponent(key);
-      const index = state.value.tabs.findIndex((item) => getTabPath(item) === originKey);
+      const index = tabs.value.findIndex((item) => getTabPath(item) === originKey);
       if (index === -1) {
         return;
       }
 
-      const tab = state.value.tabs[index];
+      const tab = tabs.value[index];
       if (tab) {
         await closeTab(tab, router);
       }
@@ -298,14 +265,14 @@ export const useTabbarStore = defineStore(
     }
 
     async function pinTab(tab: TabDefinition) {
-      const index = state.value.tabs.findIndex((item) => getTabPath(item) === getTabPath(tab));
+      const index = tabs.value.findIndex((item) => getTabPath(item) === getTabPath(tab));
       if (index !== -1) {
-        const oldTab = state.value.tabs[index];
+        const oldTab = tabs.value[index];
         tab.meta.affixTab = true;
         tab.meta.title = oldTab?.meta?.title as string;
-        state.value.tabs.splice(index, 1, tab);
+        tabs.value.splice(index, 1, tab);
       }
-      const affixTabs = state.value.tabs.filter((tab) => isAffixTab(tab));
+      const affixTabs = tabs.value.filter((tab) => isAffixTab(tab));
       const newIndex = affixTabs.findIndex((item) => getTabPath(item) === getTabPath(tab));
       await sortTabs(index, newIndex);
     }
@@ -314,22 +281,22 @@ export const useTabbarStore = defineStore(
       const { currentRoute } = router;
       const { name } = currentRoute.value;
 
-      state.value.excludeCachedTabs.add(name as string);
-      state.value.renderRouteView = false;
-      state.value.isLoading = true;
+      excludeCachedTabs.value.add(name as string);
+      renderRouteView.value = false;
+      window.$loadingBar.start();
 
       await new Promise((resolve) => setTimeout(resolve, 200));
 
-      state.value.excludeCachedTabs.delete(name as string);
-      state.value.renderRouteView = true;
-      state.value.isLoading = false;
+      excludeCachedTabs.value.delete(name as string);
+      renderRouteView.value = true;
+      window.$loadingBar.finish();
     }
 
     async function resetTabTitle(tab: TabDefinition) {
       if (tab?.meta?.newTabTitle) {
         return;
       }
-      const findTab = state.value.tabs.find((item) => getTabPath(item) === getTabPath(tab));
+      const findTab = tabs.value.find((item) => getTabPath(item) === getTabPath(tab));
       if (findTab) {
         findTab.meta.newTabTitle = undefined;
         await updateCacheTabs();
@@ -344,7 +311,7 @@ export const useTabbarStore = defineStore(
     }
 
     async function setTabTitle(tab: TabDefinition, title: string) {
-      const findTab = state.value.tabs.find((item) => getTabPath(item) === getTabPath(tab));
+      const findTab = tabs.value.find((item) => getTabPath(item) === getTabPath(tab));
 
       if (findTab) {
         findTab.meta.newTabTitle = title;
@@ -353,17 +320,17 @@ export const useTabbarStore = defineStore(
     }
 
     function setUpdateTime() {
-      state.value.updateTime = Date.now();
+      updateTime.value = Date.now();
     }
 
     async function sortTabs(oldIndex: number, newIndex: number) {
-      const currentTab = state.value.tabs[oldIndex];
+      const currentTab = tabs.value[oldIndex];
       if (!currentTab) {
         return;
       }
-      state.value.tabs.splice(oldIndex, 1);
-      state.value.tabs.splice(newIndex, 0, currentTab);
-      state.value.dragEndIndex = state.value.dragEndIndex + 1;
+      tabs.value.splice(oldIndex, 1);
+      tabs.value.splice(newIndex, 0, currentTab);
+      dragEndIndex.value = dragEndIndex.value + 1;
     }
 
     async function toggleTabPin(tab: TabDefinition) {
@@ -372,15 +339,15 @@ export const useTabbarStore = defineStore(
     }
 
     async function unpinTab(tab: TabDefinition) {
-      const index = state.value.tabs.findIndex((item) => getTabPath(item) === getTabPath(tab));
+      const index = tabs.value.findIndex((item) => getTabPath(item) === getTabPath(tab));
 
       if (index !== -1) {
-        const oldTab = state.value.tabs[index];
+        const oldTab = tabs.value[index];
         tab.meta.affixTab = false;
         tab.meta.title = oldTab?.meta?.title as string;
-        state.value.tabs.splice(index, 1, tab);
+        tabs.value.splice(index, 1, tab);
       }
-      const affixTabs = state.value.tabs.filter((tab) => isAffixTab(tab));
+      const affixTabs = tabs.value.filter((tab) => isAffixTab(tab));
       const newIndex = affixTabs.length;
       await sortTabs(index, newIndex);
     }
@@ -388,7 +355,7 @@ export const useTabbarStore = defineStore(
     async function updateCacheTabs() {
       const cacheMap = new Set<string>();
 
-      for (const tab of state.value.tabs) {
+      for (const tab of tabs.value) {
         const keepAlive = tab.meta?.keepAlive;
         if (!keepAlive) {
           continue;
@@ -402,11 +369,16 @@ export const useTabbarStore = defineStore(
         const name = tab.name as string;
         cacheMap.add(name);
       }
-      state.value.cachedTabs = cacheMap;
+      cachedTabs.value = cacheMap;
     }
 
     return {
-      ...state,
+      cachedTabs,
+      dragEndIndex,
+      excludeCachedTabs,
+      renderRouteView,
+      tabs,
+      updateTime,
       _bulkCloseByPaths,
       _close,
       _goToDefaultTab,
@@ -439,7 +411,7 @@ export const useTabbarStore = defineStore(
   {
     persist: [
       {
-        pick: ['state.value.tabs'],
+        pick: ['tabs.value'],
         storage: sessionStorage,
       },
     ],

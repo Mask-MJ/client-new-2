@@ -9,83 +9,54 @@ import { DEFAULT_HOME_PATH } from '@/config/constants';
 import { $t } from '@/locales';
 import { acceptHMRUpdate, defineStore } from 'pinia';
 
-interface UserState {
-  /**
-   * 权限码
-   */
-  accessCodes: string[];
-  /**
-   * 可访问的菜单列表
-   */
-  accessMenus: MenuRecordRaw[];
-  /**
-   * 是否已经检查过权限
-   */
-  isAccessChecked: boolean;
-  /**
-   * 登录 accessToken
-   */
-  accessToken: null | string;
-  /**
-   * 登录中
-   */
-  loginLoading: boolean;
-  /**
-   * 登录 refreshToken
-   */
-  refreshToken: null | string;
-  /**
-   * 用户信息
-   */
-  userInfo: null | UserInfo;
-  /**
-   * 用户角色
-   */
-  userRoles: string[];
-}
-
 export const useUserStore = defineStore(
   'user-store',
   () => {
-    const state = ref<UserState>({
-      accessCodes: [],
-      accessMenus: [],
-      accessToken: '',
-      loginLoading: false,
-      refreshToken: '',
-      isAccessChecked: false,
-      userInfo: {},
-      userRoles: [],
-    });
+    // 权限码
+    const accessCodes = ref<string[]>([]);
+    // 可访问的菜单列表
+    const accessMenus = ref<MenuRecordRaw[]>([]);
+    // 登录 accessToken
+    const accessToken = ref<null | string>(null);
+    // 登录中
+    const loginLoading = ref<boolean>(false);
+    // 登录 refreshToken
+    const refreshToken = ref<null | string>(null);
+    // 是否已经检查过权限
+    const isAccessChecked = ref<boolean>(false);
+    // 用户信息
+    const userInfo = ref<null | UserInfo>(null);
+    // 用户角色
+    const userRoles = ref<string[]>([]);
 
     const setAccessCodes = (codes: string[]) => {
-      state.value.accessCodes = codes;
+      accessCodes.value = codes;
     };
 
     const setAccessMenus = (menus: MenuRecordRaw[] = []) => {
-      state.value.accessMenus = menus;
+      accessMenus.value = menus;
     };
 
     const setAccessToken = (token: string) => {
-      state.value.accessToken = token;
+      accessToken.value = token;
     };
 
     const setRefreshToken = (token: string) => {
-      state.value.refreshToken = token;
+      refreshToken.value = token;
     };
 
-    const setIsAccessChecked = (isAccessChecked: boolean) => {
-      state.value.isAccessChecked = isAccessChecked;
+    const setIsAccessChecked = (checked: boolean) => {
+      isAccessChecked.value = checked;
     };
 
     const setUserInfo = (info: UserInfo) => {
-      state.value.userInfo = info;
+      userInfo.value = info;
       const roles = info?.roles.map((role) => role.name) ?? [];
       setUserRoles(roles);
     };
 
     const setUserRoles = (roles: string[]) => {
-      state.value.userRoles = roles;
+      userRoles.value = roles;
     };
 
     const fetchUserInfo = async () => {
@@ -100,7 +71,7 @@ export const useUserStore = defineStore(
       const router = useRouter();
       let userInfoData: null | UserInfo = null;
       try {
-        state.value.loginLoading = true;
+        loginLoading.value = true;
         const { data } = await login(params);
         if (data && data.accessToken) {
           setAccessToken(data.accessToken);
@@ -122,7 +93,7 @@ export const useUserStore = defineStore(
           }
         }
       } finally {
-        state.value.loginLoading = false;
+        loginLoading.value = false;
       }
 
       return {
@@ -150,24 +121,29 @@ export const useUserStore = defineStore(
           }
         }
       };
-      return findMenu(state.value.accessMenus, path);
+      return findMenu(accessMenus.value, path);
     };
 
     const resetState = () => {
-      state.value = {
-        accessCodes: [],
-        accessMenus: [],
-        accessToken: '',
-        loginLoading: false,
-        refreshToken: '',
-        isAccessChecked: false,
-        userInfo: {},
-        userRoles: [],
-      };
+      accessCodes.value = [];
+      accessMenus.value = [];
+      accessToken.value = null;
+      refreshToken.value = null;
+      isAccessChecked.value = false;
+      userInfo.value = null;
+      userRoles.value = [];
     };
 
     return {
-      ...state.value,
+      accessCodes,
+      accessMenus,
+      accessToken,
+      loginLoading,
+      refreshToken,
+      isAccessChecked,
+      userInfo,
+      userRoles,
+
       $reset: resetState,
 
       authLogin,

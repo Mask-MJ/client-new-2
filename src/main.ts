@@ -6,6 +6,7 @@ import { initRouter, router } from '@/router';
 import { initStores } from '@/stores';
 
 import App from './App.vue';
+import { unmountGlobalLoading } from './utils';
 
 import './plugins/assets';
 
@@ -27,6 +28,9 @@ async function bootstrap() {
     }
   });
   app.mount('#app');
+
+  // 移除并销毁loading
+  unmountGlobalLoading();
 }
 
 bootstrap();

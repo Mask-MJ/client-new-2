@@ -2,7 +2,6 @@ import type { Router } from 'vue-router';
 
 import { DEFAULT_HOME_PATH, LOGIN_PATH } from '@/config/constants';
 import { DEFAULT_PREFERENCES } from '@/config/preferences';
-import { useNProgress } from '@vueuse/integrations/useNProgress';
 import { flatMapDeep } from 'lodash-es';
 import { storeToRefs } from 'pinia';
 /**
@@ -12,13 +11,12 @@ import { storeToRefs } from 'pinia';
 function setupCommonGuard(router: Router) {
   // 记录已经加载的页面
   const loadedPaths = new Set<string>();
-  const { isLoading } = useNProgress();
   router.beforeEach(async (to) => {
     to.meta.loaded = loadedPaths.has(to.path);
 
     // 页面加载进度条
     if (!to.meta.loaded && DEFAULT_PREFERENCES.transition.progress) {
-      isLoading.value = true;
+      window.$loadingBar.start();
     }
     return true;
   });
@@ -30,7 +28,7 @@ function setupCommonGuard(router: Router) {
 
     // 关闭页面加载进度条
     if (DEFAULT_PREFERENCES.transition.progress) {
-      isLoading.value = false;
+      window.$loadingBar.finish();
     }
   });
 }
@@ -42,13 +40,11 @@ function setupCommonGuard(router: Router) {
 function setupAccessGuard(router: Router) {
   router.beforeEach(async (to, from) => {
     const userStore = useUserStore();
-    const { fetchUserInfo, fetchMenuList } = userStore;
-    const { userInfo, accessToken, accessMenus } = storeToRefs(userStore);
-    console.log('accessToken', accessToken);
-    console.log('accessMenus', accessMenus.value);
+    const { fetchUserInfo, fetchMenuList, setIsAccessChecked } = userStore;
+    const { accessToken, accessMenus, isAccessChecked } = storeToRefs(userStore);
     // 明确声明忽略权限访问权限，则可以访问
     if (to.meta.ignoreAccess) {
-      if (to.path === LOGIN_PATH && accessToken) {
+      if (to.path === LOGIN_PATH && accessToken.value) {
         return decodeURIComponent((to.query?.redirect as string) || DEFAULT_HOME_PATH);
       }
       return true;
@@ -64,31 +60,21 @@ function setupAccessGuard(router: Router) {
       };
     }
 
-    // 判断是否有用户信息
-    if (!userInfo) {
-      await fetchUserInfo();
+    // 是否已经初始化权限
+    if (isAccessChecked.value) {
+      // 权限检查
+      // 扁平化菜单
+      const menus = flatMapDeep(accessMenus.value, (item) => item.children);
+      const hasAccess = menus.filter((item) => item?.path === to.path);
+      if (hasAccess.length > 0) {
+        return true;
+      }
     }
-    if (accessMenus.value.length === 0) {
-      await fetchMenuList();
-    }
-    // 权限检查
-    // 扁平化菜单
-    // flattenTree(accessMenus);
-    const menus = flatMapDeep(accessMenus.value, (item) => item.children);
-    const hasAccess = menus.filter((item) => item?.path === to.path);
-    if (hasAccess.length > 0) {
-      return true;
-    }
-    // 生成路由表
-    // 当前登录用户拥有的角色标识列表
-    // const userInfo = userStore.userInfo || (await userStore.fetchUserInfo());
-    // const userRoles = userInfo?.roles ?? [];
 
-    // return true;
+    await fetchUserInfo();
+    await fetchMenuList();
+    setIsAccessChecked(true);
 
-    // 保存菜单信息和路由信息
-    // userStore.setAccessMenus([]);
-    // userStore.setIsAccessChecked(true);
     const redirectPath = (from.query.redirect ??
       (to.path === DEFAULT_HOME_PATH ? DEFAULT_HOME_PATH : to.fullPath)) as string;
 

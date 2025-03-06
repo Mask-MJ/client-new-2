@@ -15,14 +15,17 @@ import Components from 'unplugin-vue-components/vite';
 import { VueRouterAutoImports } from 'unplugin-vue-router';
 import VueRouter from 'unplugin-vue-router/vite';
 import { defineConfig, loadEnv } from 'vite';
+import { createHtmlPlugin } from 'vite-plugin-html';
 import Mkcert from 'vite-plugin-mkcert';
 import VueDevTools from 'vite-plugin-vue-devtools';
 import Layouts from 'vite-plugin-vue-layouts';
 
+import { viteInjectAppLoadingPlugin } from './build/appLoadingPlugin';
+
 // https://vite.dev/config/
 export default defineConfig((config: ConfigEnv) => {
   const { command, mode } = config;
-  const { VITE_BASE, VITE_PORT, VITE_PROXY } = loadEnv(mode, process.cwd());
+  const { VITE_BASE, VITE_PORT, VITE_PROXY, VITE_GLOB_APP_TITLE } = loadEnv(mode, process.cwd());
 
   return {
     base: VITE_BASE,
@@ -66,6 +69,8 @@ export default defineConfig((config: ConfigEnv) => {
         vueTemplate: true,
       }),
       Components({ dts: 'types/components.d.ts', resolvers: [NaiveUiResolver()] }),
+      createHtmlPlugin({ minify: true }),
+      viteInjectAppLoadingPlugin(VITE_GLOB_APP_TITLE),
     ],
     resolve: {
       alias: {

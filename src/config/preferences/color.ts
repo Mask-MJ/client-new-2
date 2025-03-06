@@ -109,7 +109,6 @@ export function createThemeToken(colors: ThemeColor) {
   const themeTokens = {
     colors: {
       ...paletteColors,
-      nprogress: paletteColors.primary,
       container: 'rgb(255, 255, 255)',
       layout: 'rgb(247, 250, 252)',
       inverted: 'rgb(0, 20, 40)',

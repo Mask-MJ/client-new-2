@@ -12,5 +12,5 @@ meta:
   hideInBreadcrumb: true,
   hideInMenu: true,
   hideInTab: true,
-  title: '404',
+  title: 404
 </route>

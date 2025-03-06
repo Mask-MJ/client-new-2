@@ -30,6 +30,11 @@ declare module 'vue' {
     NWatermark: typeof import('naive-ui')['NWatermark']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SliderCaptcha: typeof import('./../src/components/common/captcha/slider-captcha/index.vue')['default']
+    SliderCaptchaAction: typeof import('./../src/components/common/captcha/slider-captcha/slider-captcha-action.vue')['default']
+    SliderCaptchaBar: typeof import('./../src/components/common/captcha/slider-captcha/slider-captcha-bar.vue')['default']
+    SliderCaptchaContent: typeof import('./../src/components/common/captcha/slider-captcha/slider-captcha-content.vue')['default']
+    SpineText: typeof import('./../src/components/common/captcha/slider-captcha/spine-text.vue')['default']
     TheWelcome: typeof import('./../src/components/TheWelcome.vue')['default']
     WelcomeItem: typeof import('./../src/components/WelcomeItem.vue')['default']
   }

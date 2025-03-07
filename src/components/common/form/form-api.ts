@@ -1,19 +1,20 @@
 import type { FormState, GenericObject, ResetFormOpts, ValidationOptions } from 'vee-validate';
 
-import type { FormActions, FormSchema, VbenFormProps } from './types';
+import type { FormActions, FormProps, FormSchema } from './types';
 
-import {
-  bindMethods,
-  createMerge,
-  formatDate,
-  isDayjsObject,
-  mergeWithArrayOverride,
-  StateHandler,
-} from '@/utils';
+import { bindMethods, formatDate, isDayjsObject, StateHandler } from '@/utils';
 import { Store } from '@tanstack/vue-store';
+import { createDefu } from 'defu';
 import { isDate, isFunction, isObject } from 'lodash-es';
 
-function getDefaultState(): VbenFormProps {
+const mergeWithArrayOverride = createDefu((originObj, key, updates) => {
+  if (Array.isArray(originObj[key]) && Array.isArray(updates)) {
+    originObj[key] = updates;
+    return true;
+  }
+});
+
+function getDefaultState(): FormProps {
   return {
     actionWrapperClass: '',
     collapsed: false,
@@ -36,26 +37,26 @@ function getDefaultState(): VbenFormProps {
 }
 
 export class FormApi {
-  // private api: Pick<VbenFormProps, 'handleReset' | 'handleSubmit'>;
+  // private api: Pick<FormProps, 'handleReset' | 'handleSubmit'>;
   public form = {} as FormActions;
   isMounted = false;
 
-  public state: null | VbenFormProps = null;
+  public state: FormProps | null = null;
   stateHandler: StateHandler;
 
-  public store: Store<VbenFormProps>;
+  public store: Store<FormProps>;
 
   // 最后一次点击提交时的表单值
   private latestSubmissionValues: null | Record<string, any> = null;
 
-  private prevState: null | VbenFormProps = null;
+  private prevState: FormProps | null = null;
 
-  constructor(options: VbenFormProps = {}) {
+  constructor(options: FormProps = {}) {
     const { ...storeState } = options;
 
     const defaultState = getDefaultState();
 
-    this.store = new Store<VbenFormProps>(
+    this.store = new Store<FormProps>(
       {
         ...defaultState,
         ...storeState,
@@ -186,7 +187,7 @@ export class FormApi {
     this.latestSubmissionValues = { ...toRaw(values) };
   }
 
-  setState(stateOrFn: ((prev: VbenFormProps) => Partial<VbenFormProps>) | Partial<VbenFormProps>) {
+  setState(stateOrFn: ((prev: FormProps) => Partial<FormProps>) | Partial<FormProps>) {
     if (isFunction(stateOrFn)) {
       this.store.setState((prev) => {
         return mergeWithArrayOverride(stateOrFn(prev), prev);
@@ -219,7 +220,7 @@ export class FormApi {
      * element-plus的日期时间相关组件的值类型可能为Date对象
      * 以上两种类型需要排除深度合并
      */
-    const fieldMergeFn = createMerge((obj, key, value) => {
+    const fieldMergeFn = createDefu((obj, key, value) => {
       if (key in obj) {
         obj[key] =
           !Array.isArray(obj[key]) &&
@@ -319,7 +320,7 @@ export class FormApi {
       await this.stateHandler.waitForCondition();
     }
     if (!this.form?.meta) {
-      throw new Error('<VbenForm /> is not mounted');
+      throw new Error('<Form /> is not mounted');
     }
     return this.form;
   }

@@ -23,6 +23,7 @@
     "@vueuse/core": "^12.5.0",
     "@vueuse/integrations": "^12.5.0",
     "change-case": "^5.4.4",
+    "dayjs": "^1.11.13",
     "defu": "^6.1.4",
     "lodash-es": "^4.17.21",
     "lucide-vue-next": "^0.475.0",

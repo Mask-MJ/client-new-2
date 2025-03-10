@@ -7,12 +7,7 @@ import { Store } from '@tanstack/vue-store';
 import { createDefu } from 'defu';
 import { isDate, isFunction, isObject } from 'lodash-es';
 
-const mergeWithArrayOverride = createDefu((originObj, key, updates) => {
-  if (Array.isArray(originObj[key]) && Array.isArray(updates)) {
-    originObj[key] = updates;
-    return true;
-  }
-});
+import { mergeWithArrayOverride } from './form-render/helper';
 
 function getDefaultState(): FormProps {
   return {

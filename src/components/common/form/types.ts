@@ -33,7 +33,7 @@ export interface FormShape {
   fieldName: string;
   /** 是否必填 */
   required?: boolean;
-  rules?: ZodTypeAny;
+  rule?: ZodTypeAny;
 }
 
 export type MaybeComponentPropKey =

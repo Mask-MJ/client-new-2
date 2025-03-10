@@ -1,5 +1,6 @@
 import type { AnyZodObject, ZodDefault, ZodEffects, ZodNumber, ZodString, ZodTypeAny } from 'zod';
 
+import { createDefu } from 'defu';
 import { isObject, isString } from 'lodash-es';
 
 /**
@@ -44,3 +45,10 @@ export function isEventObjectLike(obj: any) {
   }
   return Reflect.has(obj, 'target') && Reflect.has(obj, 'stopPropagation');
 }
+
+export const mergeWithArrayOverride = createDefu((originObj, key, updates) => {
+  if (Array.isArray(originObj[key]) && Array.isArray(updates)) {
+    originObj[key] = updates;
+    return true;
+  }
+});

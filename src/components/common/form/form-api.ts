@@ -16,7 +16,6 @@ const mergeWithArrayOverride = createDefu((originObj, key, updates) => {
 
 function getDefaultState(): FormProps {
   return {
-    actionWrapperClass: '',
     collapsed: false,
     collapsedRows: 1,
     collapseTriggerResize: false,
@@ -24,7 +23,7 @@ function getDefaultState(): FormProps {
     handleReset: undefined,
     handleSubmit: undefined,
     handleValuesChange: undefined,
-    layout: 'horizontal',
+    labelPlacement: 'left',
     resetButtonOptions: {},
     schema: [],
     showCollapseButton: false,
@@ -32,7 +31,6 @@ function getDefaultState(): FormProps {
     submitButtonOptions: {},
     submitOnChange: false,
     submitOnEnter: false,
-    wrapperClass: 'grid-cols-1',
   };
 }
 

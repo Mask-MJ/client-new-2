@@ -36,6 +36,8 @@ export const usePreferencesStore = defineStore(
       return { error, info, primary, success, warning };
     });
 
+    const isDarkTheme = computed(() => state.value.theme.mode === 'dark');
+
     watch(
       themeColors,
       (val) => {
@@ -48,6 +50,7 @@ export const usePreferencesStore = defineStore(
       ...state.value,
       $reset: resetState,
       updatePreferences,
+      isDarkTheme,
     };
   },
   { persist: true },

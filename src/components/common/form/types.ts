@@ -1,119 +1,43 @@
-import type { ButtonProps, FormItemProps, FormProps as NaiveFormProps } from 'naive-ui';
-import type { FieldOptions, FormContext, GenericObject } from 'vee-validate';
-import type { ZodTypeAny } from 'zod';
+import type { ButtonProps, FormItemGiProps, FormProps as NaiveFormProps } from 'naive-ui';
 
-import type { HtmlHTMLAttributes } from 'vue';
-
-type MaybeReadonlyRef<T> = (() => T) | ComputedRef<T>;
-type MaybeComputedRef<T> = MaybeReadonlyRef<T> | MaybeRef<T>;
-
-export type BaseFormComponentType =
-  | 'Checkbox'
-  | 'DefaultButton'
-  | 'Input'
-  | 'InputPassword'
-  | 'PinInput'
-  | 'PrimaryButton'
-  | 'Select'
-  | (Record<never, never> & string);
-
-export type FormFieldOptions = Partial<
-  FieldOptions & {
-    validateOnBlur?: boolean;
-    validateOnChange?: boolean;
-    validateOnInput?: boolean;
-    validateOnModelUpdate?: boolean;
-  }
->;
-
-export interface FormShape {
-  /** 默认值 */
-  default?: any;
-  /** 字段名 */
-  fieldName: string;
-  /** 是否必填 */
-  required?: boolean;
-  rule?: ZodTypeAny;
-}
-
-export type MaybeComponentPropKey =
-  | 'options'
-  | 'placeholder'
-  | 'title'
-  | keyof HtmlHTMLAttributes
-  | (Record<never, never> & string);
-
-export type MaybeComponentProps = { [K in MaybeComponentPropKey]?: any };
-
-export type FormActions = FormContext<GenericObject>;
+import type { ComponentName, ComponentPropsType } from './component';
 
 export type CustomRenderType = (() => Component | string) | string;
+// 渲染回调参数
+export interface RenderCallbackParams {
+  schema: FormSchema;
+  values: Record<string, any>;
+  model: Record<string, any>;
+  path: string;
+}
 
-export type FormSchemaRuleType =
-  | 'required'
-  | 'selectRequired'
-  | null
-  | (Record<never, never> & string)
-  | ZodTypeAny;
-
-type FormItemDependenciesCondition<T = boolean | PromiseLike<boolean>> = (
-  value: Partial<Record<string, any>>,
-  actions: FormActions,
-) => T;
-
-type FormItemDependenciesConditionWithRules = (
-  value: Partial<Record<string, any>>,
-  actions: FormActions,
-) => FormSchemaRuleType | PromiseLike<FormSchemaRuleType>;
-
-type FormItemDependenciesConditionWithProps = (
-  value: Partial<Record<string, any>>,
-  actions: FormActions,
-) => MaybeComponentProps | PromiseLike<MaybeComponentProps>;
-
-export interface FormItemDependencies extends Omit<FormItemProps, 'required' | 'rule'> {
+export interface FormItemDependencies extends FormItemGiProps {
   /**
    * 组件参数
    * @returns 组件参数
    */
-  componentProps?: FormItemDependenciesConditionWithProps;
-  /**
-   * 是否禁用
-   * @returns 是否禁用
-   */
-  disabled?: boolean | FormItemDependenciesCondition;
+  componentProps?: ComponentPropsType;
+
   /**
    * 是否渲染（删除dom）
    * @returns 是否渲染
    */
-  if?: boolean | FormItemDependenciesCondition;
-  /**
-   * 是否必填
-   * @returns 是否必填
-   */
-  required?: boolean | FormItemDependenciesCondition;
-  /**
-   * 字段规则
-   */
-  rule?: FormItemDependenciesConditionWithRules;
+  if?: ((renderCallbackParams: RenderCallbackParams) => boolean) | boolean;
+
   /**
    * 是否隐藏(Css)
    * @returns 是否隐藏
    */
-  show?: boolean | FormItemDependenciesCondition;
+  show?: ((renderCallbackParams: RenderCallbackParams) => boolean) | boolean;
   /**
    * 任意触发都会执行
    */
-  trigger?: FormItemDependenciesCondition<void>;
+  // trigger?: FormItemDependenciesCondition<void>;
   /**
    * 触发字段
    */
   triggerFields: string[];
 }
-
-type ComponentProps =
-  | ((value: Partial<Record<string, any>>, actions: FormActions) => MaybeComponentProps)
-  | MaybeComponentProps;
 
 export interface FormCommonConfig {
   /**
@@ -123,7 +47,7 @@ export interface FormCommonConfig {
   /**
    * 所有表单项的props
    */
-  componentProps?: ComponentProps;
+  componentProps?: ComponentPropsType;
   /**
    * 所有表单项的禁用状态
    * @default false
@@ -144,21 +68,11 @@ export interface FormCommonConfig {
    */
   emptyStateValue?: null;
   /**
-   * 所有表单项的控件样式
-   * @default {}
-   */
-  formFieldProps?: FormFieldOptions;
-  /**
    * 所有表单项的model属性名
    * @default "modelValue"
    */
   modelPropName?: string;
 }
-
-type RenderComponentContentType = (
-  value: Partial<Record<string, any>>,
-  api: FormActions,
-) => Record<string, any>;
 
 export type HandleSubmitFn = (values: Record<string, any>) => Promise<void> | void;
 
@@ -170,12 +84,12 @@ export type FieldMappingTime = [
   (((value: any, fieldName: string) => any) | [string, string] | null | string)?,
 ][];
 
-export interface FormSchema<T extends BaseFormComponentType = BaseFormComponentType>
-  extends FormCommonConfig {
+// 表单子项配置
+export interface FormSchema extends FormCommonConfig {
   /** 组件 */
-  component: Component | T;
+  component: ComponentName;
   /** 组件参数 */
-  componentProps?: ComponentProps;
+  componentProps?: ComponentPropsType;
   /** 默认值 */
   defaultValue?: any;
   /** 依赖 */
@@ -188,20 +102,11 @@ export interface FormSchema<T extends BaseFormComponentType = BaseFormComponentT
   help?: CustomRenderType;
   /** 表单项 */
   label?: CustomRenderType;
-  // 自定义组件内部渲染
-  renderComponentContent?: RenderComponentContentType;
-  /** 字段规则 */
-  rule?: FormSchemaRuleType;
   /** 后缀 */
   suffix?: CustomRenderType;
 }
 
-export interface FormFieldProps extends FormSchema {
-  required?: boolean;
-}
-
-export interface FormRenderProps<T extends BaseFormComponentType = BaseFormComponentType>
-  extends NaiveFormProps {
+export interface FormRenderProps extends NaiveFormProps {
   /**
    * 是否展开，在showCollapseButton=true下生效
    */
@@ -227,19 +132,15 @@ export interface FormRenderProps<T extends BaseFormComponentType = BaseFormCompo
   /**
    * 组件v-model事件绑定
    */
-  componentBindEventMap?: Partial<Record<BaseFormComponentType, string>>;
+  componentBindEventMap?: Partial<Record<ComponentName, string>>;
   /**
    * 组件集合
    */
-  componentMap: Record<BaseFormComponentType, Component>;
-  /**
-   * 表单实例
-   */
-  form?: FormContext<GenericObject>;
+  componentMap: Record<ComponentName, Component>;
   /**
    * 表单定义
    */
-  schema?: FormSchema<T>[];
+  schema?: FormSchema[];
   /**
    * 是否显示展开/折叠
    */
@@ -248,12 +149,12 @@ export interface FormRenderProps<T extends BaseFormComponentType = BaseFormCompo
 
 export interface ActionButtonOptions extends ButtonProps {
   [key: string]: any;
-  content?: MaybeComputedRef<string>;
+  content?: string;
   show?: boolean;
 }
 
-export interface FormProps<T extends BaseFormComponentType = BaseFormComponentType>
-  extends Omit<FormRenderProps<T>, 'componentBindEventMap' | 'componentMap' | 'form'> {
+export interface FormProps
+  extends Omit<FormRenderProps, 'componentBindEventMap' | 'componentMap' | 'form'> {
   /**
    * 表单字段映射
    */

@@ -2,16 +2,17 @@ import type { ButtonProps, FormItemGiProps, FormProps as NaiveFormProps } from '
 
 import type { ComponentName, ComponentPropsType } from './component';
 
-export type CustomRenderType = (() => Component | string) | string;
+type CustomRenderType = (() => Component | string) | string;
+
 // 渲染回调参数
-export interface RenderCallbackParams {
+interface RenderCallbackParams {
   schema: FormSchema;
   values: Record<string, any>;
   model: Record<string, any>;
   path: string;
 }
 
-export interface FormItemDependencies extends FormItemGiProps {
+interface FormItemDependencies extends FormItemGiProps {
   /**
    * 组件参数
    * @returns 组件参数
@@ -39,7 +40,7 @@ export interface FormItemDependencies extends FormItemGiProps {
   triggerFields: string[];
 }
 
-export interface FormCommonConfig {
+interface FormCommonConfig {
   /**
    * 在Label后显示一个冒号
    */
@@ -74,18 +75,18 @@ export interface FormCommonConfig {
   modelPropName?: string;
 }
 
-export type HandleSubmitFn = (values: Record<string, any>) => Promise<void> | void;
+type HandleSubmitFn = (values: Record<string, any>) => Promise<void> | void;
 
-export type HandleResetFn = (values: Record<string, any>) => Promise<void> | void;
+type HandleResetFn = (values: Record<string, any>) => Promise<void> | void;
 
-export type FieldMappingTime = [
+type FieldMappingTime = [
   string,
   [string, string],
   (((value: any, fieldName: string) => any) | [string, string] | null | string)?,
 ][];
 
 // 表单子项配置
-export interface FormSchema extends FormCommonConfig {
+interface FormSchema extends FormCommonConfig {
   /** 组件 */
   component: ComponentName;
   /** 组件参数 */
@@ -106,7 +107,7 @@ export interface FormSchema extends FormCommonConfig {
   suffix?: CustomRenderType;
 }
 
-export interface FormRenderProps extends NaiveFormProps {
+interface FormRenderProps extends NaiveFormProps {
   /**
    * 是否展开，在showCollapseButton=true下生效
    */
@@ -147,13 +148,13 @@ export interface FormRenderProps extends NaiveFormProps {
   showCollapseButton?: boolean;
 }
 
-export interface ActionButtonOptions extends ButtonProps {
+interface ActionButtonOptions extends ButtonProps {
   [key: string]: any;
   content?: string;
   show?: boolean;
 }
 
-export interface FormProps
+interface FormProps
   extends Omit<FormRenderProps, 'componentBindEventMap' | 'componentMap' | 'form'> {
   /**
    * 表单字段映射
@@ -198,3 +199,5 @@ export interface FormProps
    */
   submitOnEnter?: boolean;
 }
+
+export type { FormCommonConfig, FormItemDependencies, FormProps, FormRenderProps, FormSchema };

@@ -18,6 +18,8 @@ import type {
   UploadProps,
 } from 'naive-ui';
 
+import type { FormActionType, FormSchema } from './types';
+
 export interface FormComponentProps {
   schema: FormSchema;
   formModel: any;
@@ -53,8 +55,11 @@ interface ApiProps {
 
 type ComponentProps<T> = ((arg: any) => T) | T;
 
-type Component =
-  | { component: 'AutoComplete'; componentProps: ComponentProps<AutoCompleteProps> }
+export type ComponentMap =
+  | { component: 'ApiSelect'; componentProps: ComponentProps<ApiProps & SelectProps> }
+  | { component: 'ApiTree'; componentProps: ComponentProps<ApiProps & TreeProps> }
+  | { component: 'ApiTreeSelect'; componentProps: ComponentProps<ApiProps & TreeSelectProps> }
+  | { component: 'AutoComplete'; componentProps: ComponentProps<ApiProps & AutoCompleteProps> }
   | { component: 'Cascader'; componentProps: ComponentProps<CascaderProps> }
   | { component: 'Checkbox'; componentProps: ComponentProps<CheckboxProps> }
   | { component: 'CheckboxGroup'; componentProps: ComponentProps<CheckboxGroupProps> }
@@ -72,5 +77,5 @@ type Component =
   | { component: 'TreeSelect'; componentProps: ComponentProps<TreeSelectProps> }
   | { component: 'Upload'; componentProps: ComponentProps<UploadProps> };
 
-export type ComponentName = Component['component'];
-export type ComponentPropsType = Component['componentProps'];
+export type ComponentName = ComponentMap['component'];
+export type ComponentPropsType = ComponentMap['componentProps'];

@@ -69,4 +69,8 @@ function bindMethods<T extends object>(instance: T): void {
   });
 }
 
-export { bindMethods, isHttpUrl, isMacOs, isWindow, isWindowsOs };
+function isProdMode(): boolean {
+  return import.meta.env.PROD;
+}
+
+export { bindMethods, isHttpUrl, isMacOs, isProdMode, isWindow, isWindowsOs };
